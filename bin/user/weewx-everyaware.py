@@ -49,6 +49,9 @@ class EveryAware(weewx.restx.StdRESTbase):
             site_dict['feeds']
             site_dict['geoLatitude'] = config_dict['Station']['latitude']
             site_dict['geoLongitude'] = config_dict['Station']['longitude']
+            site_dict['location'] = config_dict['Station']['location']
+            site_dict['altitude'] = config_dict['Station']['altitude']
+            site_dict['stationType'] = config_dict['Station']['station_type']
         except KeyError, e:
             logerr("Data will not be posted: Missing option %s" % e)
             return
@@ -66,7 +69,7 @@ class EveryAware(weewx.restx.StdRESTbase):
 
 
 class EveryAwareThread(weewx.restx.RESTThread):
-    _API_URL = 'http://DerGuteste-XPS:8080/ubicon-webapp/api/v1/packets'
+    _API_URL = 'http://localhost:8080/ubicon-webapp/api/v1/packets'
     _DATA_MAP = {'out_temp': ('outTemp', '%.1f'),  # C
                  'in_temp': ('inTemp', '%.1f'), # C
                  'dew_point': ('dewpoint', '%.1f'), # C
@@ -85,7 +88,8 @@ class EveryAwareThread(weewx.restx.RESTThread):
                  'precip_interval': ('interval', '%d')  # seconds
                  }
 
-    def __init__(self, queue, feeds, geoLatitude, geoLongitude, manager_dict,
+    def __init__(self, queue, feeds, geoLatitude, geoLongitude, location,
+                 altitude, stationType, manager_dict,
                  sourceId = get_mac(), contentDetailsType='generic',
                  server_url=_API_URL, skip_upload=False, post_interval=60,
                  max_backlog=sys.maxint, stale=None, log_success=True,
@@ -106,6 +110,9 @@ class EveryAwareThread(weewx.restx.RESTThread):
         self.contentDetailsType = contentDetailsType
         self.geoLatitude = geoLatitude
         self.geoLongitude = geoLongitude
+        self.location = location
+        self.altitude = altitude
+        self.stationType = stationType
         self.server_url = server_url
         self.skip_upload = to_bool(skip_upload)
 
@@ -135,16 +142,23 @@ class EveryAwareThread(weewx.restx.RESTThread):
         # put everything into the right units and scaling
         record = weewx.units.to_METRICWX(in_record)
         # put data into expected structure and format
-        values = {}
-        #values['timestamp'] = time.localtime(record['dateTime'])
+        channels = {}
         for key in self._DATA_MAP:
             rkey = self._DATA_MAP[key][0]
             if record.has_key(rkey) and record[rkey] is not None:
-                values[key] = {'value': self._DATA_MAP[key][1] % record[rkey]}
+                channels[key] = {'value': self._DATA_MAP[key][1] % record[rkey]}
+
+        # add channel with general information
+        channels['info'] = {
+            'location' = self.location,
+            'altitude' = self.altitude,
+            'stationType' = self.stationType
+        }
+
         json_data = json.dumps(
             [{
                 'timestamp': int(record['dateTime'])*1000, # convert to ms
-                'channels': values
+                'channels': channels
             }])
         loginf('json_data: %s' % json_data)
         if weewx.debug >= 1:
