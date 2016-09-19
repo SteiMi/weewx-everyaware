@@ -69,7 +69,7 @@ class EveryAware(weewx.restx.StdRESTbase):
 
 
 class EveryAwareThread(weewx.restx.RESTThread):
-    _API_URL = 'http://localhost:8080/ubicon-webapp/api/v1/packets'
+    _API_URL = 'http://DerGuteste-XPS:8080/ubicon-webapp/api/v1/packets'
     _DATA_MAP = {'out_temp': ('outTemp', '%.1f'),  # C
                  'in_temp': ('inTemp', '%.1f'), # C
                  'dew_point': ('dewpoint', '%.1f'), # C
@@ -126,8 +126,6 @@ class EveryAwareThread(weewx.restx.RESTThread):
         req.add_header('meta.feeds', self.feeds)
         req.add_header('meta.sourceId', self.sourceId)
         req.add_header('data.contentDetails.type', self.contentDetailsType)
-        req.add_header('geo.latitude', self.geoLatitude)
-        req.add_header('geo.longitude', self.geoLongitude)
         self.post_with_retries(req)
 
     def check_response(self, response):
@@ -150,9 +148,15 @@ class EveryAwareThread(weewx.restx.RESTThread):
 
         # add channel with general information
         channels['info'] = {
-            'location' = self.location,
-            'altitude' = self.altitude,
-            'stationType' = self.stationType
+            'location': self.location,
+            'altitude': self.altitude[0] + ' ' + self.altitude[1],
+            'station_type': self.stationType
+        }
+
+        # add channel with geo information
+        channels['geo'] = {
+            'latitude': self.geoLatitude,
+            'longitude': self.geoLongitude
         }
 
         json_data = json.dumps(
