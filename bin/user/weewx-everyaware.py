@@ -69,7 +69,7 @@ class EveryAware(weewx.restx.StdRESTbase):
 
 
 class EveryAwareThread(weewx.restx.RESTThread):
-    _API_URL = 'http://DerGuteste-XPS:8080/ubicon-webapp/api/v1/packets'
+    _API_URL = 'http://cs.everyaware.eu/api/v1/packets'
     _DATA_MAP = {'out_temp': ('outTemp', '%.1f'),  # C
                  'in_temp': ('inTemp', '%.1f'), # C
                  'dew_point': ('dewpoint', '%.1f'), # C
