@@ -6,7 +6,7 @@ This is an extension for [WeeWX](https://github.com/weewx) that publishes data t
 
 1. Download WeeWX EveryAware from https://github.com/SteiMi/weewx-everyaware/archive/master.tar.gz using:
 ```
-wget wget -O weewx-everyaware.tar.gz https://github.com/SteiMi/weewx-everyaware/archive/master.tar.gz
+wget -O weewx-everyaware.tar.gz https://github.com/SteiMi/weewx-everyaware/archive/master.tar.gz
 ```
 
 2. Install the extension using:
